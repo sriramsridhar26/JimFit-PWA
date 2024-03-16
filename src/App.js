@@ -4,8 +4,10 @@ import './App.css';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { Login } from './pages/Login/Login';
 import { Home } from './pages/Home/Home';
+import { useState, useRef, useEffect } from 'react';
 
 function App() {
+  const [maxDistance, setmaxDistance] = useState(69);
   const router = createBrowserRouter([
     {
       path:"/",
@@ -13,7 +15,7 @@ function App() {
     },
     {
       path:"/home",
-      element:<Home/>
+      element:<Home />
     }
   ]);
 
