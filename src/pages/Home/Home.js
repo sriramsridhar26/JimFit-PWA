@@ -1,214 +1,200 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { PoseDetector, SupportedModels, createDetector, movenet } from '@tensorflow-models/pose-detection';
-import '@tensorflow/tfjs-backend-webgl';
-import * as tf from '@tensorflow/tfjs';
-import '@tensorflow/tfjs-backend-webgpu';
-import { CalculateElbowAngle, CalculateShoulderWristDistance, CountPushup } from '../../components/PushupTracker';
 import { Button } from '@mui/material';
-
+import { Grid } from '@mui/material';
+import './Home.css';
+import { mockexercisetypes, mockprofiledata } from '../../data/mockupdata';
+import calendar from '../../assets/calendar.png';
+import threedots from '../../assets/more.png';
+import flashicon from '../../assets/white-flash.png';
+import { ExerciseCard } from '../../components/ExerciseCard/ExerciseCard';
+import challenge from '../../assets/challenges.png';
+import fastforward from '../../assets/fast-forward.png';
+import trophy from '../../assets/trophy.png';
 
 
 export function Home() {
-    // console.log(maxDistance);
+    var data = mockprofiledata();
+    const date = new Date();
+    var exercisecards = mockexercisetypes();
 
-    useEffect(() => {
-        const initTfBackend = async () => {
-
-            try {
-                await tf.setBackend('webgpu');
-            } catch (error) {
-                console.log("Error setting webgpu as backend, setting webgl as");
-                await tf.setBackend('webgl');
-            }
-
-            await tf.ready();
-            // setBackendInitialized(true);
-        };
-
-        initTfBackend();
-    }, []);
-
-    const detectorConfig = { modelType: movenet.modelType.SINGLEPOSE_THUNDER };
-    // const detectorPromise = createDetector(SupportedModels.MoveNet, detectorConfig);
-    const detectorRef = useRef(null);
-
-    const constraints = {
-        audio: false,
-        video: { facingMode: "user" }
-    };
-    // console.log("Home refresh");
-    const [stream, setStream] = useState(null);
-    // const [devids, setdevids] = useState([]);
-    const [videoFeedOn, setVideoFeedOn] = useState(false);
-    const [maxDistance, setmaxDistance] = useState(0);
-    var maxDistanceRef = useRef(0);
-    var currentState = useRef(false);
-    const [pushupCount, setpushupCount] = useState(0);
-    var pushupCountRef = useRef(0);
-    const [elbowangle, setelbowankle] = useState(0);
-    const [distance, setDistance] = useState(0);
-    // var distance =
-    const [actLoop, setactLoop] = useState(false);
-    var prevState = useRef(false);
-    const videoRef = useRef(null);
-
-
-    useEffect(() => {
-
-        const getStream = async () => {
-            try {
-                // const getcam = navigator.mediaDevices.getUserMedia || navigator.
-                const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                setStream(stream);
-                videoRef.current.srcObject = stream;
-                // const detector = await createDetector(SupportedModels.MoveNet, detectorConfig);
-                // const vid = document.getElementById('video');
-                // const poses = await detector.estimatePoses(vid,{flipHorizontal: false,maxPoses:1 });
-                // console.log(poses);
-                // const detector = await detectorPromise;
-                const detector = await createDetector(SupportedModels.MoveNet, detectorConfig);
-                detectorRef.current = detector;
-                setVideoFeedOn(true);
-                console.log("invoked stream useEffect");
-            } catch (error) {
-                console.error('Error accessing camera or invoking detector:', error);
-                alert("Error accessing camera or invoking detector: ", error);
-            }
-        };
-        // navigator.mediaDevices.enumerateDevices().then(gotDevices);
-
-        getStream();
-        return () => {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-            }
-        };
-    }, []);
-
-    // useEffect(() => {
-    //     const intervalId = setInterval(async () => {
-    //         if (videoFeedOn && detectorRef.current) {
-    //             // alert("entered vidfeedon && detectorRef.curret");
-    //             try {
-    //                 const poses = await detectorRef.current.estimatePoses(videoRef.current, {
-    //                     flipHorizontal: false,
-    //                     maxPoses: 1,
-    //                 });
-    //                 // const requestOptions = {
-    //                 //     method: 'POST',
-    //                 //     headers: { 'Content-Type': 'application/json' },
-    //                 //     body: JSON.stringify({ poses: poses })
-    //                 // };
-    //                 // console.log(requestOptions);
-    //                 // alert("Lorem Ipsum is simply dummy text of the printing and typesetting industry.\n Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.");
-    //                 // alert(JSON.stringify({ poses: poses }));
-    //                 // await fetch('http://192.168.2.38:5000/api/data', requestOptions);
-    //                 console.log(poses);
-    //                 // console.log(poses[0].keypoints.find(keypoint =>keypoint.name==="left_shoulder"));
-
-    //                 console.log("maxDistance before invoking: ", maxDistance);
-    //                 await setelbowankle(CalculateElbowAngle(poses));
-    //                 const result = await CalculateShoulderWristDistance(maxDistance, poses);
-    //                 console.log("maxDistance from function: ", result.maxDistance);
-    //                 setmaxDistance(result.maxDistance);
-    //                 console.log("maxDistance after setting: ", maxDistance);
-    //                 setDistance(result.distance);
-    //             } catch (error) {
-    //                 console.error('Error generating pose values', error);
-    //                 alert("Error generating pose values " + error);
-    //             }
-    //         }
-    //     }, 1000);
-    //     return () => {
-    //         clearInterval(intervalId);
-    //     };
-    // }, [videoFeedOn]);
-
-    useEffect(() => {
-        const loop = async () => {
-            while (actLoop) {
-                try {
-                    const poses = await detectorRef.current.estimatePoses(videoRef.current, {
-                        flipHorizontal: false,
-                        maxPoses: 1,
-                    });
-                    // const requestOptions = {
-                    //     method: 'POST',
-                    //     headers: { 'Content-Type': 'application/json' },
-                    //     body: JSON.stringify({ poses: poses })
-                    // };
-                    // console.log(requestOptions);
-                    // alert("Lorem Ipsum is simply dummy text of the printing and typesetting industry.\n Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.");
-                    // alert(JSON.stringify({ poses: poses }));
-                    // await fetch('http://192.168.2.38:5000/api/data', requestOptions);
-                    
-                    console.log(poses);
-                    
-                    // console.log(poses[0].keypoints.find(keypoint =>keypoint.name==="left_shoulder"));
-
-                    // console.log("maxDistanceRef: ",maxDistanceRef.current);
-                    // console.log("maxDistance before invoking: ", maxDistance);
-                    await setelbowankle(CalculateElbowAngle(poses));
-                    const result = await CalculateShoulderWristDistance(maxDistanceRef.current, poses);
-                    // console.log("maxDistance from function: ", result.maxDistance);
-                    setmaxDistance(result.maxDistance);
-                    maxDistanceRef.current = result.maxDistance;
-                    // console.log("maxDistance after setting: ", maxDistance);
-                    setDistance(result.distance);
-                    prevState.current = currentState.current;
-                    currentState.current = await CountPushup(maxDistanceRef.current,result.distance,currentState.current);
-                    if(prevState.current===true && currentState.current===false){
-                        console.log("pushupCount+1");
-                        // setpushupCount(pushupCount+1);
-                        console.log(pushupCountRef.current);
-                        pushupCountRef.current = pushupCountRef.current+1;
-                    }
-                } catch (error) {
-                    console.error('Error generating pose values', error);
-                    alert("Error generating pose values " + error);
-                }
-            }
-        }
-        loop();
-
-    }, [actLoop]);
-
-    
-
-    useEffect(() =>{
-        if(currentState.current===false){
-            setpushupCount(pushupCount+1);
-            console.log("pushup count: ",pushupCount);
-        }
-
-    },[pushupCountRef.current])
-
-    // console.log("maxDistance outside: ", maxDistance);
     return (
         <>
-            <h1>Hello from home</h1>
-            <div>
-                <h3>distance: {distance}</h3>
+            <div className='homediv'>
+                <div className='topbar'>
+                    <Grid container spacing={2}>
+                        <Grid item xs={2}>
+                            <div className='imgdiv'>
+                                <img className='imga' src={`${data.img}`} width="50px" height="50px" />
+                            </div>
+
+                        </Grid>
+                        <Grid item xs={8}>
+                            <h3>Welcome {data.FirstName}</h3>
+                            <p>{date.toLocaleString('default', { month: 'long' })},{date.getDay()}</p>
+                        </Grid>
+                        <Grid item xs={2}>
+                            <div className='imgdiv'>
+                                <img src={calendar} width="32px" height="32px" />
+                            </div>
+                        </Grid>
+                    </Grid>
+                </div>
+                <div className='Progress'>
+                    <div className='current'>
+                        {/* <Progress progress={75} /> */}
+                        <h1>{data.TodayBurn} Kcal</h1>
+                        <p>Total Kilocalories</p>
+                    </div>
+                </div>
+                <div className='stats'>
+                    <Grid container spacing={2}>
+                        <Grid item xs={4} style={{ paddingTop: "1%" }}>
+                            <div className='indstat'>
+                                <h3>{data.AvgBurn} </h3>
+                                <p>Avg burn</p>
+                            </div>
+
+                        </Grid>
+                        <Grid item xs={4} style={{ paddingTop: "1%" }} >
+                            <div className='indstat'>
+                                <h3>{data.PeakBurn} </h3>
+                                <p>Peak cal burn</p>
+                            </div>
+
+                        </Grid>
+                        <Grid item xs={4} style={{ paddingTop: "1%" }}>
+                            <div className='indstat'>
+                                <h3>{data.AvgTime} </h3>
+                                <p>Avg time</p>
+                            </div>
+
+                        </Grid>
+                    </Grid>
+                </div>
+                <div className='exercisecardsection'>
+                    <h4>Grind</h4>
+                    <div className='exercisecards'>
+
+                        <div className='dummycard'></div>
+                        {exercisecards.map((item) => {
+                            return <ExerciseCard exercise={item} />
+                        })}
+
+                    </div>
+                </div>
+                <div className='Goals'>
+                    <div className='Goals-heading'>
+                        <Grid container>
+                            <Grid item xs={10}>
+                                <h4 style={{ marginTop: '5%' }}>
+                                    Short Term Goal
+                                </h4>
+                                <p>
+                                    April 2024
+                                </p>
+                            </Grid>
+                            <Grid item xs={2}>
+                                <div className='dotimg'>
+                                    <img src={threedots} />
+                                </div>
+                            </Grid>
+                        </Grid>
+                    </div>
+                    <div className='Goals-content'>
+                        <div className='Goals-card'>
+                            <div className='Goals-card-top'>
+                                <Grid container>
+                                    <Grid item xs={4}>
+                                        <div className='flash'>
+                                            <div className='flashicon'>
+                                                <img src={flashicon} width="32px" height="32px" />
+                                            </div>
+                                        </div>
+
+                                    </Grid>
+                                    <Grid item xs={8}>
+                                        <p>WEEK 1</p>
+                                        <h3>Body Weight</h3>
+                                        <h5>Workout 1 of 5</h5>
+                                    </Grid>
+                                </Grid>
+                            </div>
+                            <div className='Goals-card-bottom'>
+                                <Grid container>
+                                    <Grid item xs={4}>
+                                        <div className='fwdicon'>
+                                            <img src={fastforward} width="32px" height="32px" />
+                                        </div>
+                                    </Grid>
+                                    <Grid item xs={8}>
+                                        <p>Next Exercise</p>
+                                        <h4>Lower Body</h4>
+                                    </Grid>
+                                </Grid>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div className='Goals'>
+                    <div className='Goals-heading'>
+                        <Grid container>
+                            <Grid item xs={10}>
+                                <h4 style={{ marginTop: '5%' }}>
+                                    Long Term Goal
+                                </h4>
+                                <p>
+                                    2024
+                                </p>
+                            </Grid>
+                            <Grid item xs={2}>
+                                <div className='dotimg'>
+                                    <img src={threedots} />
+                                </div>
+                            </Grid>
+                        </Grid>
+                    </div>
+                    <div className='Goals-content'>
+                        <div className='Goals-card'>
+                            <div className='Goals-card-top'>
+                                <Grid container>
+                                    <Grid item xs={4}>
+                                        <div className='flash'>
+                                            <div className='tr-flashicon'>
+                                                <img src={trophy} width="32px" height="32px" />
+                                            </div>
+                                        </div>
+
+                                    </Grid>
+                                    <Grid item xs={8}>
+                                        <p>Month 4</p>
+                                        <h3>Body Weight</h3>
+                                        <h5>Avg workout time: 50m/day</h5>
+                                    </Grid>
+                                </Grid>
+                            </div>
+                            <div className='Goals-card-bottom'>
+                                <Grid container>
+                                    <Grid item xs={4}>
+                                        <div className='fwdicon'>
+                                            <img src={challenge} width="32px" height="32px" />
+                                        </div>
+                                    </Grid>
+                                    <Grid item xs={8}>
+                                        <p>Need to focus on</p>
+                                        <h4>Triceps</h4>
+                                    </Grid>
+                                </Grid>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <h1>Hello from home</h1>
             </div>
-            {/* <div>
-                <h3>maxdistance: {maxDistance}</h3>
-            </div> */}
-            <div>
-                <h3>angle: {elbowangle}</h3>
-            </div>
-            <div>
-                <h3>pushupCount: {pushupCount}</h3>
-            </div>
-            <div>
-                <Button onClick={() => {
-                    setactLoop(true);
-                }}>Activate</Button>
-            </div>
-            <div>
-                <video id='video' ref={videoRef} autoPlay muted playsInline />
-            </div>
+
         </>
-
-
     )
 }

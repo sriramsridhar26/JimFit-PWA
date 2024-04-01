@@ -5,6 +5,7 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { Login } from './pages/Login/Login';
 import { Home } from './pages/Home/Home';
 import { useState, useRef, useEffect } from 'react';
+import { Pushup } from './pages/Exercise/Pushup/Pushup';
 
 function App() {
   const [maxDistance, setmaxDistance] = useState(69);
@@ -16,6 +17,10 @@ function App() {
     {
       path:"/home",
       element:<Home />
+    },
+    {
+      path:"/Pushup",
+      element:<Pushup/>
     }
   ]);
 
