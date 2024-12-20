@@ -97,5 +97,5 @@ This project offered significant learning opportunities, including:
 
 ## Contact
 
-For any inquiries or feedback, please contact:
-- **Sriram Sridhar**: [sriramsridhar01@gmail.com](mailto:sriramsridhar01@gmail.com)
+For inquiries, please contact:
+- Sriram Sridhar - `sriramsridhar26@gmail.com`
