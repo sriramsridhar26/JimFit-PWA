@@ -35,7 +35,9 @@ The combination of precise angle calculations, real-time feedback, and motion tr
 ## Architecture
 
 ![Architecture-Pushup](screenshots/architecture-pushup.png)
-#### <center> Architecture-Pushup </center>
+<div align="center">
+<h3>Architecture-Pushup</h3>
+</div>
 
 ## Demo
 <div align="center">
